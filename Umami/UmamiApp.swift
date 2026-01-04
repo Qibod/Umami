@@ -6,27 +6,33 @@
 //
 
 import SwiftUI
-import SwiftData
 
 @main
 struct UmamiApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @StateObject private var appState = AppState()
+    @StateObject private var languageManager = LanguageManager.shared
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ZStack {
+                switch appState.currentPhase {
+                case .splash:
+                    SplashView()
+                case .authentication:
+                    AuthenticationView(isAuthenticated: $appState.isAuthenticated)
+                        .onChange(of: appState.isAuthenticated) { _, newValue in
+                            if newValue {
+                                withAnimation {
+                                    appState.signIn()
+                                }
+                            }
+                        }
+                case .main:
+                    MainTabView()
+                        .environmentObject(languageManager)
+                        .transition(.opacity)
+                }
+            }
         }
-        .modelContainer(sharedModelContainer)
     }
 }
