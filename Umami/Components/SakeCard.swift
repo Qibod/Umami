@@ -24,7 +24,7 @@ struct SakeCard: View {
             // Image with discount badge
             ZStack(alignment: .topLeading) {
                 // Async image loading from URL
-                AsyncImage(url: URL(string: sake.imageUrl)) { phase in
+                AsyncImage(url: URL(string: sake.imageURL)) { phase in
                     switch phase {
                     case .empty:
                         RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
