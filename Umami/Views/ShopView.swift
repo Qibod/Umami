@@ -12,8 +12,9 @@ struct ShopView: View {
     @State private var showingFilters = false
     @State private var showingSortOptions = false
     @State private var selectedFilters = FilterOptions()
-
-    private let sampleData = SampleData.shared
+    @State private var sakes: [Sake] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     var body: some View {
         NavigationView {
@@ -26,21 +27,47 @@ struct ShopView: View {
 
                 // Sake list
                 ScrollView {
-                    LazyVStack(spacing: AppTheme.Spacing.md) {
-                        ForEach(Array(sampleData.sakes.enumerated()), id: \.element.id) { index, sake in
-                            SakeListCard(
-                                sake: sake,
-                                showDiscount: index % 2 == 0,
-                                discountPercentage: [13, 10, 9][index % 3]
-                            )
-                            .padding(.horizontal, AppTheme.Spacing.md)
+                    if isLoading {
+                        ProgressView("Loading sake...")
+                            .padding()
+                    } else if let error = errorMessage {
+                        VStack(spacing: 16) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.system(size: 40))
+                                .foregroundColor(.orange)
+                            Text("Error Loading Data")
+                                .font(.headline)
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Button("Retry") {
+                                Task { await loadSakes() }
+                            }
                         }
-                    }
-                    .padding(.vertical, AppTheme.Spacing.md)
+                        .padding()
+                    } else {
+                        LazyVStack(spacing: AppTheme.Spacing.md) {
+                            ForEach(Array(sakes.enumerated()), id: \.element.id) { index, sake in
+                                SakeListCard(
+                                    sake: sake,
+                                    showDiscount: index % 2 == 0,
+                                    discountPercentage: [13, 10, 9][index % 3]
+                                )
+                                .padding(.horizontal, AppTheme.Spacing.md)
+                            }
+                        }
+                        .padding(.vertical, AppTheme.Spacing.md)
 
-                    Spacer(minLength: 80)
+                        Spacer(minLength: 80)
+                    }
                 }
                 .background(AppTheme.Colors.lightBackground)
+                .task {
+                    await loadSakes()
+                }
+                .refreshable {
+                    await loadSakes()
+                }
             }
             .navigationBarHidden(true)
         }
@@ -492,6 +519,29 @@ struct SortOptionsView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Load Sakes
+    private func loadSakes() async {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            print("📡 Fetching sakes for shop...")
+            let response = try await APIService.shared.fetchAllSake(
+                sortBy: "rating",
+                sortOrder: "desc",
+                limit: 100
+            )
+
+            print("✅ Received \(response.data.count) sakes")
+            sakes = response.data.map { $0.toSake() }
+        } catch {
+            errorMessage = error.localizedDescription
+            print("❌ Error loading sakes: \(error)")
+        }
+
+        isLoading = false
     }
 }
 

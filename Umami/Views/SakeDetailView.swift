@@ -88,20 +88,49 @@ struct SakeDetailView: View {
     // MARK: - Hero Section
     private var heroSection: some View {
         ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 0)
-                .fill(
-                    LinearGradient(
-                        colors: [AppTheme.Colors.secondary, AppTheme.Colors.primary],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(height: 400)
-                .overlay(
-                    Image(systemName: "photo")
-                        .font(.system(size: 80))
-                        .foregroundColor(.white.opacity(0.3))
-                )
+            AsyncImage(url: URL(string: sake.imageURL)) { phase in
+                switch phase {
+                case .empty:
+                    RoundedRectangle(cornerRadius: 0)
+                        .fill(
+                            LinearGradient(
+                                colors: [AppTheme.Colors.secondary, AppTheme.Colors.primary],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(height: 400)
+                        .overlay(
+                            ProgressView()
+                                .tint(.white)
+                        )
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 400)
+                        .clipped()
+                case .failure:
+                    RoundedRectangle(cornerRadius: 0)
+                        .fill(
+                            LinearGradient(
+                                colors: [AppTheme.Colors.secondary, AppTheme.Colors.primary],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(height: 400)
+                        .overlay(
+                            Image(systemName: "photo")
+                                .font(.system(size: 80))
+                                .foregroundColor(.white.opacity(0.3))
+                        )
+                @unknown default:
+                    RoundedRectangle(cornerRadius: 0)
+                        .fill(AppTheme.Colors.cardBackground)
+                        .frame(height: 400)
+                }
+            }
         }
     }
 

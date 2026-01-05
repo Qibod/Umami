@@ -240,13 +240,35 @@ struct MySakeCard: View {
     private var cardContent: some View {
         HStack(spacing: AppTheme.Spacing.md) {
             // Image
-            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm)
-                .fill(AppTheme.Colors.cardBackground)
-                .frame(width: 80, height: 110)
-                .overlay(
-                    Image(systemName: "photo")
-                        .foregroundColor(AppTheme.Colors.textTertiary)
-                )
+            AsyncImage(url: URL(string: sake.imageURL)) { phase in
+                switch phase {
+                case .empty:
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm)
+                        .fill(AppTheme.Colors.cardBackground)
+                        .frame(width: 80, height: 110)
+                        .overlay(
+                            ProgressView()
+                        )
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 80, height: 110)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm))
+                case .failure:
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm)
+                        .fill(AppTheme.Colors.cardBackground)
+                        .frame(width: 80, height: 110)
+                        .overlay(
+                            Image(systemName: "photo")
+                                .foregroundColor(AppTheme.Colors.textTertiary)
+                        )
+                @unknown default:
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm)
+                        .fill(AppTheme.Colors.cardBackground)
+                        .frame(width: 80, height: 110)
+                }
+            }
 
             // Info
             VStack(alignment: .leading, spacing: 6) {
