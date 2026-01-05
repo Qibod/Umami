@@ -482,7 +482,7 @@ To become the definitive mobile companion for sake enthusiasts worldwide by prov
 ## Competitive Analysis
 
 ### Key Competitors
-- **Vivino** (wine): Strong photo recognition and community reviews
+- **Wine discovery apps**: Strong photo recognition and community reviews
 - **Delectable** (wine): Clean UI, professional focus
 - **Sake-specific apps**: Limited features, outdated design
 

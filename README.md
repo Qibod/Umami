@@ -1,6 +1,6 @@
 # Umami - Sake Discovery App
 
-A premium iOS application for sake enthusiasts, inspired by Vivino's design language but tailored for the world of Japanese sake. Built with SwiftUI and following Apple's design principles.
+A premium iOS application for sake enthusiasts, built with SwiftUI and following Apple's design principles for discovering and exploring Japanese sake.
 
 ## Project Overview
 
@@ -278,9 +278,7 @@ Key features from PRD:
 
 ## Design Inspiration
 
-Reference screenshots from Vivino are available in: `Reference images from Vinino/`
-
-The app closely follows Vivino's UX patterns while adapting them for sake-specific features and Japanese aesthetic.
+The app features an elegant, minimalist design tailored for sake-specific features and Japanese aesthetic.
 
 ## Notes
 
