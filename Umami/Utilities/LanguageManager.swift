@@ -37,7 +37,7 @@ class LanguageManager: ObservableObject {
         }
     }
 
-    private init() {
+    init() {
         // Load saved language or use device default
         if let savedLanguage = UserDefaults.standard.string(forKey: "selectedLanguage"),
            let language = AppLanguage(rawValue: savedLanguage) {

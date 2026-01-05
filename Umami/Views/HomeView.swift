@@ -99,7 +99,7 @@ struct HomeView: View {
         }
         .padding(AppTheme.Spacing.md)
         .background(Color.white)
-        .cornerRadius(AppTheme.CornerRadius.medium)
+        .cornerRadius(AppTheme.CornerRadius.md)
         .padding(.horizontal, AppTheme.Spacing.lg)
     }
 
