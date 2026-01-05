@@ -23,14 +23,38 @@ struct SakeCard: View {
         VStack(alignment: .leading, spacing: 8) {
             // Image with discount badge
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
-                    .fill(AppTheme.Colors.cardBackground)
-                    .aspectRatio(0.75, contentMode: .fit)
-                    .overlay(
-                        Image(systemName: "photo")
-                            .font(.largeTitle)
-                            .foregroundColor(AppTheme.Colors.textTertiary)
-                    )
+                // Async image loading from URL
+                AsyncImage(url: URL(string: sake.imageUrl)) { phase in
+                    switch phase {
+                    case .empty:
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                            .fill(AppTheme.Colors.cardBackground)
+                            .aspectRatio(0.75, contentMode: .fit)
+                            .overlay(
+                                ProgressView()
+                            )
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(0.75, contentMode: .fit)
+                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md))
+                    case .failure:
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                            .fill(AppTheme.Colors.cardBackground)
+                            .aspectRatio(0.75, contentMode: .fit)
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .font(.largeTitle)
+                                    .foregroundColor(AppTheme.Colors.textTertiary)
+                            )
+                    @unknown default:
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                            .fill(AppTheme.Colors.cardBackground)
+                            .aspectRatio(0.75, contentMode: .fit)
+                    }
+                }
 
                 if showDiscount && discountPercentage > 0 {
                     Text("-\(discountPercentage)%")
@@ -147,14 +171,37 @@ struct SakeListCard: View {
         HStack(spacing: AppTheme.Spacing.md) {
             // Image with discount badge
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
-                    .fill(AppTheme.Colors.cardBackground)
-                    .frame(width: 100, height: 140)
-                    .overlay(
-                        Image(systemName: "photo")
-                            .font(.title)
-                            .foregroundColor(AppTheme.Colors.textTertiary)
-                    )
+                // Async image loading from URL
+                AsyncImage(url: URL(string: sake.imageUrl)) { phase in
+                    switch phase {
+                    case .empty:
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                            .fill(AppTheme.Colors.cardBackground)
+                            .frame(width: 100, height: 140)
+                            .overlay(
+                                ProgressView()
+                            )
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 100, height: 140)
+                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md))
+                    case .failure:
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                            .fill(AppTheme.Colors.cardBackground)
+                            .frame(width: 100, height: 140)
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .font(.title)
+                                    .foregroundColor(AppTheme.Colors.textTertiary)
+                            )
+                    @unknown default:
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                            .fill(AppTheme.Colors.cardBackground)
+                            .frame(width: 100, height: 140)
+                    }
+                }
 
                 if showDiscount && discountPercentage > 0 {
                     Text("-\(discountPercentage)%")
