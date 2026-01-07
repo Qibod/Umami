@@ -48,17 +48,19 @@ struct CustomTabBar: View {
 
     var body: some View {
         ZStack {
-            // Background with curve for camera button
+            // Background - Minimalist white with subtle shadow (Glassmorphism effect)
             HStack(spacing: 0) {
                 Rectangle()
-                    .fill(AppTheme.Colors.primary)
+                    .fill(.ultraThinMaterial)
                     .frame(height: 70)
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: -5)
             }
 
             HStack(spacing: 0) {
                 // Home
                 TabBarButton(
-                    icon: "house.fill",
+                    icon: "house", // "house" instead of "house.fill" for lighter look
+                    selectedIcon: "house.fill",
                     title: LocalizedStrings.get("home", language: languageManager.currentLanguage),
                     isSelected: selectedTab == 0,
                     action: { selectedTab = 0 }
@@ -66,34 +68,40 @@ struct CustomTabBar: View {
 
                 // Shop
                 TabBarButton(
-                    icon: "square.grid.2x2.fill",
+                    icon: "square.grid.2x2",
+                    selectedIcon: "square.grid.2x2.fill",
                     title: LocalizedStrings.get("shop", language: languageManager.currentLanguage),
                     isSelected: selectedTab == 1,
                     action: { selectedTab = 1 }
                 )
 
-                // Camera - Special circular button
+                // Camera - Floating Minimalist Red Circle (Sun of Japan)
                 Button(action: { selectedTab = 2 }) {
                     ZStack {
+                        // White halo for separation
                         Circle()
                             .fill(Color.white)
-                            .frame(width: 64, height: 64)
-                            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+                            .frame(width: 70, height: 70)
+                            // Subtle shadow
+                            .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
 
+                        // The Red Sun
                         Circle()
-                            .fill(AppTheme.Colors.primary)
-                            .frame(width: 56, height: 56)
+                            .fill(AppTheme.Colors.primary) // Umami Red
+                            .frame(width: 58, height: 58)
 
-                        Image(systemName: "camera.fill")
+                        Image(systemName: "camera")
                             .font(.title2)
+                            .fontWeight(.medium)
                             .foregroundColor(.white)
                     }
                 }
-                .offset(y: -20)
+                .offset(y: -25) // Floating higher
 
                 // My Sake
                 TabBarButton(
-                    icon: "wineglass.fill",
+                    icon: "wineglass",
+                    selectedIcon: "wineglass.fill",
                     title: LocalizedStrings.get("mySake", language: languageManager.currentLanguage),
                     isSelected: selectedTab == 3,
                     action: { selectedTab = 3 }
@@ -102,6 +110,7 @@ struct CustomTabBar: View {
                 // More
                 TabBarButton(
                     icon: "ellipsis",
+                    selectedIcon: "ellipsis",
                     title: LocalizedStrings.get("more", language: languageManager.currentLanguage),
                     isSelected: selectedTab == 4,
                     action: { selectedTab = 4 }
@@ -115,19 +124,23 @@ struct CustomTabBar: View {
 
 struct TabBarButton: View {
     let icon: String
+    let selectedIcon: String
     let title: String
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
+            VStack(spacing: 6) {
+                Image(systemName: isSelected ? selectedIcon : icon)
+                    .font(.system(size: 22)) // Slightly larger, thinner
+                    .fontWeight(isSelected ? .semibold : .light)
+                
                 Text(title)
-                    .font(AppTheme.Typography.caption2)
+                    .font(.system(size: 10, weight: isSelected ? .medium : .regular))
             }
-            .foregroundColor(isSelected ? .white : .white.opacity(0.6))
+            // Minimalist colors: Dark Grey vs Umami Red
+            .foregroundColor(isSelected ? AppTheme.Colors.primary : Color.gray.opacity(0.8))
             .frame(maxWidth: .infinity)
         }
     }
@@ -135,4 +148,5 @@ struct TabBarButton: View {
 
 #Preview {
     MainTabView()
+        .environmentObject(LanguageManager())
 }

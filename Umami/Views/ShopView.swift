@@ -111,6 +111,29 @@ struct ShopView: View {
         .background(Color.white)
     }
 
+    // MARK: - Load Sakes
+    private func loadSakes() async {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            print("📡 Fetching sakes for shop...")
+            let response = try await APIService.shared.fetchAllSake(
+                sortBy: "rating",
+                sortOrder: "desc",
+                limit: 100
+            )
+
+            print("✅ Received \(response.data.count) sakes")
+            sakes = response.data.map { $0.toSake() }
+        } catch {
+            errorMessage = error.localizedDescription
+            print("❌ Error loading sakes: \(error)")
+        }
+
+        isLoading = false
+    }
+
     // MARK: - Sort Filter Bar
     private var sortFilterBar: some View {
         HStack(spacing: AppTheme.Spacing.lg) {
@@ -520,31 +543,9 @@ struct SortOptionsView: View {
             }
         }
     }
-
-    // MARK: - Load Sakes
-    private func loadSakes() async {
-        isLoading = true
-        errorMessage = nil
-
-        do {
-            print("📡 Fetching sakes for shop...")
-            let response = try await APIService.shared.fetchAllSake(
-                sortBy: "rating",
-                sortOrder: "desc",
-                limit: 100
-            )
-
-            print("✅ Received \(response.data.count) sakes")
-            sakes = response.data.map { $0.toSake() }
-        } catch {
-            errorMessage = error.localizedDescription
-            print("❌ Error loading sakes: \(error)")
-        }
-
-        isLoading = false
-    }
 }
 
 #Preview {
     ShopView()
+        .environmentObject(LanguageManager())
 }

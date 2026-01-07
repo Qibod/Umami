@@ -9,32 +9,17 @@ import SwiftUI
 
 struct LanguageToggle: View {
     @ObservedObject var languageManager = LanguageManager.shared
-    @State private var showLanguageMenu = false
 
     var body: some View {
-        Button(action: { showLanguageMenu = true }) {
-            HStack(spacing: 4) {
-                Text(languageManager.currentLanguage.flag)
-                    .font(.caption)
-            }
-            .padding(8)
-            .background(AppTheme.Colors.cardBackground.opacity(0.5))
-            .clipShape(Circle())
+        Button(action: {
+            // Toggle between languages
+            languageManager.currentLanguage = languageManager.currentLanguage == .english ? .japanese : .english
+        }) {
+            Text(languageManager.currentLanguage == .english ? "🇬🇧" : "🇯🇵")
+                .font(.title2)
+                .frame(minWidth: 44, minHeight: 44) // iOS minimum tap target
         }
-        .actionSheet(isPresented: $showLanguageMenu) {
-            ActionSheet(
-                title: Text("Select Language / 言語を選択"),
-                buttons: [
-                    .default(Text("🇺🇸 English")) {
-                        languageManager.currentLanguage = .english
-                    },
-                    .default(Text("🇯🇵 日本語")) {
-                        languageManager.currentLanguage = .japanese
-                    },
-                    .cancel()
-                ]
-            )
-        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

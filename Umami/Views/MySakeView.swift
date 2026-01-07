@@ -415,4 +415,5 @@ struct CollectionRow: View {
 
 #Preview {
     MySakeView()
+        .environmentObject(LanguageManager())
 }

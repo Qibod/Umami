@@ -11,6 +11,8 @@ struct SakeCard: View {
     let sake: Sake
     var showDiscount: Bool = false
     var discountPercentage: Int = 0
+    @ObservedObject private var favoritesManager = FavoritesManager.shared
+    @EnvironmentObject var languageManager: LanguageManager
 
     var body: some View {
         NavigationLink(destination: SakeDetailView(sake: sake)) {
@@ -24,37 +26,39 @@ struct SakeCard: View {
             // Image with discount badge
             ZStack(alignment: .topLeading) {
                 // Async image loading from URL
-                AsyncImage(url: URL(string: sake.imageURL)) { phase in
-                    switch phase {
-                    case .empty:
-                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
-                            .fill(AppTheme.Colors.cardBackground)
-                            .aspectRatio(0.75, contentMode: .fit)
-                            .overlay(
-                                ProgressView()
-                            )
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(maxWidth: .infinity)
-                            .aspectRatio(0.75, contentMode: .fit)
-                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md))
-                    case .failure:
-                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
-                            .fill(AppTheme.Colors.cardBackground)
-                            .aspectRatio(0.75, contentMode: .fit)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .font(.largeTitle)
-                                    .foregroundColor(AppTheme.Colors.textTertiary)
-                            )
-                    @unknown default:
-                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
-                            .fill(AppTheme.Colors.cardBackground)
-                            .aspectRatio(0.75, contentMode: .fit)
+                GeometryReader { geometry in
+                    AsyncImage(url: URL(string: sake.imageURL)) { phase in
+                        switch phase {
+                        case .empty:
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                                .fill(AppTheme.Colors.cardBackground)
+                                .frame(width: geometry.size.width, height: geometry.size.width / 0.75)
+                                .overlay(
+                                    ProgressView()
+                                )
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: geometry.size.width, height: geometry.size.width / 0.75)
+                                .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md))
+                        case .failure:
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                                .fill(AppTheme.Colors.cardBackground)
+                                .frame(width: geometry.size.width, height: geometry.size.width / 0.75)
+                                .overlay(
+                                    Image(systemName: "photo")
+                                        .font(.largeTitle)
+                                        .foregroundColor(AppTheme.Colors.textTertiary)
+                                )
+                        @unknown default:
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                                .fill(AppTheme.Colors.cardBackground)
+                                .frame(width: geometry.size.width, height: geometry.size.width / 0.75)
+                        }
                     }
                 }
+                .aspectRatio(0.75, contentMode: .fit)
 
                 if showDiscount && discountPercentage > 0 {
                     Text("-\(discountPercentage)%")
@@ -71,14 +75,8 @@ struct SakeCard: View {
 
             // Sake info
             VStack(alignment: .leading, spacing: 4) {
-                // Brewery name
-                Text(sake.breweryName)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
-                    .lineLimit(1)
-
                 // Sake name
-                Text(sake.displayName)
+                Text(languageManager.currentLanguage == .english ? sake.nameEnglish : sake.nameJapanese)
                     .font(AppTheme.Typography.callout)
                     .fontWeight(.semibold)
                     .foregroundColor(AppTheme.Colors.textPrimary)
@@ -130,10 +128,12 @@ struct SakeCard: View {
                 Spacer()
 
                 // Bookmark button
-                Button(action: {}) {
-                    Image(systemName: "bookmark")
+                Button(action: {
+                    favoritesManager.toggleFavorite(sake.id)
+                }) {
+                    Image(systemName: favoritesManager.isFavorite(sake.id) ? "bookmark.fill" : "bookmark")
                         .font(.body)
-                        .foregroundColor(AppTheme.Colors.textSecondary)
+                        .foregroundColor(favoritesManager.isFavorite(sake.id) ? AppTheme.Colors.primary : AppTheme.Colors.textSecondary)
                 }
 
                 // Add to cart button
@@ -159,6 +159,8 @@ struct SakeListCard: View {
     let sake: Sake
     var showDiscount: Bool = false
     var discountPercentage: Int = 0
+    @ObservedObject private var favoritesManager = FavoritesManager.shared
+    @EnvironmentObject var languageManager: LanguageManager
 
     var body: some View {
         NavigationLink(destination: SakeDetailView(sake: sake)) {
@@ -218,13 +220,8 @@ struct SakeListCard: View {
 
             // Sake info
             VStack(alignment: .leading, spacing: 6) {
-                // Brewery name
-                Text(sake.breweryName)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
-
                 // Sake name
-                Text(sake.displayName)
+                Text(languageManager.currentLanguage == .english ? sake.nameEnglish : sake.nameJapanese)
                     .font(AppTheme.Typography.callout)
                     .fontWeight(.semibold)
                     .foregroundColor(AppTheme.Colors.textPrimary)
@@ -274,10 +271,12 @@ struct SakeListCard: View {
 
             // Actions
             VStack(spacing: AppTheme.Spacing.md) {
-                Button(action: {}) {
-                    Image(systemName: "bookmark")
+                Button(action: {
+                    favoritesManager.toggleFavorite(sake.id)
+                }) {
+                    Image(systemName: favoritesManager.isFavorite(sake.id) ? "bookmark.fill" : "bookmark")
                         .font(.body)
-                        .foregroundColor(AppTheme.Colors.textSecondary)
+                        .foregroundColor(favoritesManager.isFavorite(sake.id) ? AppTheme.Colors.primary : AppTheme.Colors.textSecondary)
                 }
 
                 Spacer()
@@ -307,4 +306,5 @@ struct SakeListCard: View {
         SakeListCard(sake: SampleData.shared.sakes[1], showDiscount: true, discountPercentage: 10)
     }
     .padding()
+    .environmentObject(LanguageManager())
 }
