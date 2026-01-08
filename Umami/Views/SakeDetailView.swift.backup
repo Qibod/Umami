@@ -15,26 +15,10 @@ struct SakeDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Hero image with parallax
-                GeometryReader { geometry in
-                    let minY = geometry.frame(in: .global).minY
-                    let height: CGFloat = 400
+                // Hero image
+                heroSection
 
-                    // Calculate parallax effects based on scroll position
-                    let scrollProgress = minY / height
-                    let scale = 1 + max(scrollProgress * 0.5, 0)
-                    let opacity = 1 - max(-minY / 200, 0)
-                    let yOffset = -minY * 0.5
-
-                    heroSection
-                        .frame(width: geometry.size.width, height: height + max(minY, 0))
-                        .scaleEffect(scale, anchor: .bottom)
-                        .offset(y: min(yOffset, 0))
-                        .opacity(opacity)
-                }
-                .frame(height: 400)
-
-                // Main content with white background that slides over
+                // Main content
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                     // Sake name and basic info
                     nameSection
@@ -78,7 +62,6 @@ struct SakeDetailView: View {
                     Spacer(minLength: 100)
                 }
                 .padding(AppTheme.Spacing.md)
-                .background(Color.white)
             }
         }
         .ignoresSafeArea(edges: .top)
@@ -116,7 +99,7 @@ struct SakeDetailView: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(height: 400)
                         .overlay(
                             ProgressView()
                                 .tint(.white)
@@ -125,7 +108,7 @@ struct SakeDetailView: View {
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(height: 400)
                         .clipped()
                 case .failure:
                     RoundedRectangle(cornerRadius: 0)
@@ -136,7 +119,7 @@ struct SakeDetailView: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(height: 400)
                         .overlay(
                             Image(systemName: "photo")
                                 .font(.system(size: 80))
@@ -145,7 +128,7 @@ struct SakeDetailView: View {
                 @unknown default:
                     RoundedRectangle(cornerRadius: 0)
                         .fill(AppTheme.Colors.cardBackground)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(height: 400)
                 }
             }
         }
