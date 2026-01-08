@@ -14,33 +14,46 @@ struct MySakeView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: AppTheme.Spacing.lg) {
-                    // Header
-                    header
+            GeometryReader { geometry in
+                ZStack(alignment: .top) {
+                    // Scrollable content
+                    ScrollView {
+                        VStack(spacing: AppTheme.Spacing.lg) {
+                            // Spacer for fixed header
+                            Spacer()
+                                .frame(height: 60)
 
-                    // Scanned sake prompt
-                    if showScannedPrompt {
-                        scannedPromptCard
+                            // Scanned sake prompt
+                            if showScannedPrompt {
+                                scannedPromptCard
+                            }
+
+                            // Latest section
+                            latestSection
+
+                            // Taste profile section
+                            tasteProfileSection
+
+                            // Statistics cards
+                            statisticsSection
+
+                            // Collections
+                            collectionsSection
+
+                            Spacer(minLength: 80)
+                        }
+                        .padding(.top, geometry.safeAreaInsets.top + 8)
                     }
 
-                    // Latest section
-                    latestSection
-
-                    // Taste profile section
-                    tasteProfileSection
-
-                    // Statistics cards
-                    statisticsSection
-
-                    // Collections
-                    collectionsSection
-
-                    Spacer(minLength: 80)
+                    // Fixed header section (stays at top)
+                    VStack(spacing: 0) {
+                        header
+                            .padding(.vertical, 8)
+                    }
+                    .background(AppTheme.Colors.lightBackground)
                 }
-                .padding(.top, AppTheme.Spacing.md)
             }
-            .background(AppTheme.Colors.lightBackground)
+            .background(AppTheme.Colors.lightBackground.ignoresSafeArea(edges: .top))
             .navigationBarHidden(true)
         }
     }
@@ -164,15 +177,36 @@ struct MySakeView: View {
             .cornerRadius(AppTheme.CornerRadius.md)
             .padding(.horizontal, AppTheme.Spacing.md)
 
-            // Taste preference chart (placeholder)
-            VStack(spacing: AppTheme.Spacing.md) {
-                tastePreferenceRow(label: "Sweetness", value: 3)
-                tastePreferenceRow(label: "Acidity", value: 4)
-                tastePreferenceRow(label: "Body", value: 3)
-                tastePreferenceRow(label: "Umami", value: 5)
+            // Taste preference chart with sake bottle visualization
+            HStack(alignment: .center, spacing: AppTheme.Spacing.lg) {
+                // Sake bottle and cup visualization
+                HStack(alignment: .bottom, spacing: 12) {
+                    sakeBottleVisualization(
+                        sweetness: 0.10,
+                        acidity: 0.30,
+                        body: 0.25,
+                        umami: 0.35
+                    )
+                    .frame(width: 80)
+
+                    // Sake cup (ochoko)
+                    sakeCupVisualization()
+                        .frame(width: 40, height: 37.5)
+                        .offset(y: -5)
+                }
+                .frame(width: 140)
+
+                // Taste attributes
+                VStack(spacing: AppTheme.Spacing.md) {
+                    tasteAttributeRow(label: "Sweetness", color: Color(red: 0.98, green: 0.89, blue: 0.71), percentage: 0.10)
+                    tasteAttributeRow(label: "Acidity", color: Color(red: 0.89, green: 0.76, blue: 0.76), percentage: 0.30)
+                    tasteAttributeRow(label: "Body", color: Color(red: 0.82, green: 0.71, blue: 0.55), percentage: 0.25)
+                    tasteAttributeRow(label: "Umami", color: Color(red: 0.45, green: 0.26, blue: 0.26), percentage: 0.35)
+                }
+                .frame(maxWidth: .infinity)
             }
             .padding(AppTheme.Spacing.md)
-            .background(Color.white)
+            .background(Color(red: 0.98, green: 0.97, blue: 0.95))
             .cornerRadius(AppTheme.CornerRadius.md)
             .padding(.horizontal, AppTheme.Spacing.md)
         }
@@ -206,22 +240,71 @@ struct MySakeView: View {
     }
 
     // MARK: - Helper Views
-    private func tastePreferenceRow(label: String, value: Int) -> some View {
-        HStack {
+    private func sakeBottleVisualization(sweetness: Double, acidity: Double, body: Double, umami: Double) -> some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                // Bottle outline - traditional sake bottle shape
+                SakeBottleShape()
+                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2.5)
+
+                // Filled sections (from bottom to top: Umami, Body, Acidity, Sweetness)
+                VStack(spacing: 0) {
+                    Spacer()
+
+                    // Umami (bottom layer - darker brown)
+                    if umami > 0 {
+                        Color(red: 0.45, green: 0.26, blue: 0.26)
+                            .frame(height: geometry.size.height * 0.65 * umami)
+                    }
+
+                    // Body (warm tan/brown)
+                    if body > 0 {
+                        Color(red: 0.82, green: 0.71, blue: 0.55)
+                            .frame(height: geometry.size.height * 0.65 * body)
+                    }
+
+                    // Acidity (soft dusty rose)
+                    if acidity > 0 {
+                        Color(red: 0.89, green: 0.76, blue: 0.76)
+                            .frame(height: geometry.size.height * 0.65 * acidity)
+                    }
+
+                    // Sweetness (top layer - light cream)
+                    if sweetness > 0 {
+                        Color(red: 0.98, green: 0.89, blue: 0.71)
+                            .frame(height: geometry.size.height * 0.65 * sweetness)
+                    }
+                }
+                .clipShape(SakeBottleShape())
+            }
+        }
+        .aspectRatio(0.45, contentMode: .fit)
+    }
+
+    private func sakeCupVisualization() -> some View {
+        GeometryReader { geometry in
+            ZStack {
+                // Cup outline
+                SakeCupShape()
+                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+
+                // White interior/ceramic look
+                SakeCupShape()
+                    .fill(Color(red: 0.95, green: 0.94, blue: 0.92))
+            }
+        }
+    }
+
+    private func tasteAttributeRow(label: String, color: Color, percentage: Double) -> some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(color)
+                .frame(width: 16, height: 16)
+
             Text(label)
                 .font(AppTheme.Typography.callout)
                 .foregroundColor(AppTheme.Colors.textPrimary)
-                .frame(width: 100, alignment: .leading)
-
-            HStack(spacing: 4) {
-                ForEach(1...5, id: \.self) { index in
-                    Circle()
-                        .fill(index <= value ? AppTheme.Colors.primary : AppTheme.Colors.cardBackground)
-                        .frame(width: 12, height: 12)
-                }
-            }
-
-            Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
@@ -410,6 +493,129 @@ struct CollectionRow: View {
         .padding(AppTheme.Spacing.md)
         .background(Color.white)
         .cornerRadius(AppTheme.CornerRadius.md)
+    }
+}
+
+// MARK: - Sake Bottle Shape
+struct SakeBottleShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        let width = rect.width
+        let height = rect.height
+
+        // Start from bottom center-left
+        path.move(to: CGPoint(x: width * 0.3, y: height))
+
+        // Left side of body - gently curves outward
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.15, y: height * 0.5),
+            control: CGPoint(x: width * 0.15, y: height * 0.8)
+        )
+
+        // Curve inward toward neck
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.35, y: height * 0.185),
+            control: CGPoint(x: width * 0.2, y: height * 0.35)
+        )
+
+        // Left side of neck (straight narrow part)
+        path.addLine(to: CGPoint(x: width * 0.38, y: height * 0.12))
+
+        // Flare out at the top (left side) - even wider opening, from 0.1 instead of 0.2 (25% wider)
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.1, y: height * 0.02),
+            control: CGPoint(x: width * 0.22, y: height * 0.05)
+        )
+
+        // Top opening - even wider, from 0.1 to 0.9 instead of 0.2 to 0.8 (25% wider)
+        path.addLine(to: CGPoint(x: width * 0.9, y: height * 0.02))
+
+        // Flare out at the top (right side) - even wider opening, to 0.9 instead of 0.8
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.62, y: height * 0.12),
+            control: CGPoint(x: width * 0.78, y: height * 0.05)
+        )
+
+        // Right side of neck (straight narrow part)
+        path.addLine(to: CGPoint(x: width * 0.65, y: height * 0.185))
+
+        // Curve outward toward body
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.85, y: height * 0.5),
+            control: CGPoint(x: width * 0.8, y: height * 0.35)
+        )
+
+        // Right side of body - gently curves inward
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.7, y: height),
+            control: CGPoint(x: width * 0.85, y: height * 0.8)
+        )
+
+        // Bottom
+        path.closeSubpath()
+
+        return path
+    }
+}
+
+// MARK: - Sake Cup Shape (Ochoko)
+struct SakeCupShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        let width = rect.width
+        let height = rect.height
+
+        // Start from bottom left (flat-ish base area)
+        path.move(to: CGPoint(x: width * 0.25, y: height))
+
+        // Gentle curve at bottom left
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.15, y: height * 0.85),
+            control: CGPoint(x: width * 0.18, y: height * 0.95)
+        )
+
+        // Left side curves outward to widest point
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.0, y: height * 0.25),
+            control: CGPoint(x: width * 0.0, y: height * 0.55)
+        )
+
+        // Upper left curves to rim
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.05, y: height * 0.0),
+            control: CGPoint(x: width * 0.0, y: height * 0.1)
+        )
+
+        // Top opening
+        path.addLine(to: CGPoint(x: width * 0.95, y: height * 0.0))
+
+        // Upper right curves from rim
+        path.addQuadCurve(
+            to: CGPoint(x: width * 1.0, y: height * 0.25),
+            control: CGPoint(x: width * 1.0, y: height * 0.1)
+        )
+
+        // Right side curves outward then down to base
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.85, y: height * 0.85),
+            control: CGPoint(x: width * 1.0, y: height * 0.55)
+        )
+
+        // Gentle curve at bottom right
+        path.addQuadCurve(
+            to: CGPoint(x: width * 0.75, y: height),
+            control: CGPoint(x: width * 0.82, y: height * 0.95)
+        )
+
+        // Bottom base
+        path.addLine(to: CGPoint(x: width * 0.25, y: height))
+
+        // Close the path
+        path.closeSubpath()
+
+        return path
     }
 }
 

@@ -13,35 +13,35 @@ struct APISake: Codable {
     let id: UUID
     let nameJapanese: String
     let nameEnglish: String
-    let breweryId: UUID
+    let breweryId: UUID?
     let breweryName: String
     let prefecture: String
     let classification: String
     let riceVariety: String?
     let polishRatio: Int?
-    let alcoholContent: Double
-    let sweetness: Int
-    let acidity: Int
-    let body: Int
-    let umami: Int
-    let aromaIntensity: Int
+    let alcoholContent: Double?
+    let sweetness: Int?
+    let acidity: Int?
+    let body: Int?
+    let umami: Int?
+    let aromaIntensity: Int?
     let smv: String?
     let acidityValue: Double?
-    let imageUrl: String
-    let price: Double
-    let content: String
-    let rating: Double
-    let reviewCount: Int
-    let description: String
-    let servingTemperature: [String]
-    let availability: String
+    let imageUrl: String?
+    let price: Double?
+    let content: String?
+    let rating: Double?
+    let reviewCount: Int?
+    let description: String?
+    let servingTemperature: [String]?
+    let availability: String?
     let isMock: Bool
     let createdAt: String
     let updatedAt: String
 
     enum CodingKeys: String, CodingKey {
         case id
-        case nameJapanese = "name_japanese"
+        case nameJapanese = "name_japanese" // Mapped exactly as requested
         case nameEnglish = "name_english"
         case breweryId = "brewery_id"
         case breweryName = "brewery_name"
@@ -76,28 +76,44 @@ struct APISake: Codable {
             id: id,
             nameJapanese: nameJapanese,
             nameEnglish: nameEnglish,
-            breweryId: breweryId,
+            breweryId: breweryId ?? UUID(),
             breweryName: breweryName,
             prefecture: prefecture,
             classification: SakeClassification(rawValue: classification) ?? .junmai,
             riceVariety: riceVariety ?? "Unknown",
             polishRatio: polishRatio ?? 60,
-            alcoholContent: alcoholContent,
+            alcoholContent: alcoholContent ?? 15.0,
             flavorProfile: FlavorProfile(
-                sweetness: sweetness,
-                acidity: acidity,
-                body: body,
-                umami: umami,
-                aromaIntensity: aromaIntensity
+                sweetness: sweetness ?? 3,
+                acidity: acidity ?? 3,
+                body: body ?? 3,
+                umami: umami ?? 3,
+                aromaIntensity: aromaIntensity ?? 3
             ),
-            imageURL: imageUrl,
-            price: price,
-            rating: rating,
-            reviewCount: reviewCount,
-            description: description,
-            servingTemperature: servingTemperature,
-            availability: Availability(rawValue: availability) ?? .inStock
+            imageURL: imageUrl ?? generateDefaultImageURL(nameEnglish: nameEnglish),
+            price: price ?? 0.0,
+            rating: rating ?? 0.0,
+            reviewCount: reviewCount ?? 0,
+            description: description ?? "",
+            servingTemperature: servingTemperature ?? [],
+            availability: Availability(rawValue: availability ?? "In Stock") ?? .inStock
         )
+    }
+
+    private func generateDefaultImageURL(nameEnglish: String) -> String {
+        // Base R2 URL
+        let baseURL = "https://pub-9d206d2575a8475b88c643b75ce366fb.r2.dev/sake-bottles/"
+        
+        // Convert name to slug: "Mio Sparkling - 300ml" -> "mio_sparkling_-_300ml_bottle.png"
+        let slug = nameEnglish.lowercased()
+            .replacingOccurrences(of: " ", with: "_")
+        
+        // Ensure no double underscores if any
+        let cleanSlug = slug.replacingOccurrences(of: "__", with: "_")
+        
+        let url = "\(baseURL)\(cleanSlug)_bottle.png"
+        print("DEBUG: Generating URL for '\(nameEnglish)' -> Slug: '\(cleanSlug)' -> URL: \(url)")
+        return url
     }
 }
 

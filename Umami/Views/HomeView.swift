@@ -162,6 +162,7 @@ struct HomeView: View {
                         NavigationLink(destination: SakeDetailView(sake: sake)) {
                             SakeCard(sake: sake)
                                 .frame(width: 180)
+                                .environmentObject(languageManager)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -187,6 +188,7 @@ struct HomeView: View {
                         NavigationLink(destination: SakeDetailView(sake: sake)) {
                             SakeCard(sake: sake)
                                 .frame(width: 180)
+                                .environmentObject(languageManager)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -212,6 +214,7 @@ struct HomeView: View {
                         NavigationLink(destination: SakeDetailView(sake: sake)) {
                             SakeCard(sake: sake)
                                 .frame(width: 180)
+                                .environmentObject(languageManager)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -237,6 +240,7 @@ struct HomeView: View {
                         NavigationLink(destination: SakeDetailView(sake: sake)) {
                             SakeCard(sake: sake)
                                 .frame(width: 180)
+                                .environmentObject(languageManager)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -295,6 +299,7 @@ struct HomeView: View {
                             NavigationLink(destination: SakeDetailView(sake: sake)) {
                                 SakeCard(sake: sake)
                                     .frame(width: 180)
+                                    .environmentObject(languageManager)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
@@ -353,7 +358,7 @@ struct HomeView: View {
         do {
             print("📡 Fetching sakes from API...")
             let response = try await APIService.shared.fetchAllSake(
-                sortBy: "rating",
+                sortBy: "created_at",
                 sortOrder: "desc",
                 limit: 50
             )
@@ -362,6 +367,12 @@ struct HomeView: View {
 
             // Convert API models to app models
             sakes = response.data.map { $0.toSake() }
+
+            // Debug: Check if Japanese names are coming from backend
+            if let firstSake = sakes.first {
+                print("🔍 First sake - English: \(firstSake.nameEnglish)")
+                print("🔍 First sake - Japanese: \(firstSake.nameJapanese)")
+            }
 
             print("✅ Converted to app models")
         } catch {

@@ -10,385 +10,366 @@ import SwiftUI
 struct SakeDetailView: View {
     let sake: Sake
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var languageManager: LanguageManager
     @State private var isBookmarked = false
+    @State private var bottleScale: CGFloat = 0.8
+    @State private var bottleOpacity: Double = 0.0
+    @State private var ratingScale: CGFloat = 0.8
+    @State private var ratingOpacity: Double = 0.0
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Hero image
-                heroSection
-
-                // Main content
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-                    // Sake name and basic info
-                    nameSection
-
-                    // Rating and reviews
-                    ratingSection
-
-                    // Classification badge
-                    classificationSection
-
-                    Divider()
-
-                    // Quick stats
-                    quickStatsSection
-
-                    Divider()
-
-                    // Flavor profile
-                    flavorProfileSection
-
-                    Divider()
-
-                    // Description
-                    descriptionSection
-
-                    Divider()
-
-                    // Serving temperature
-                    servingTempSection
-
-                    Divider()
-
-                    // Food pairings
-                    foodPairingSection
-
-                    Divider()
-
-                    // Reviews section (placeholder)
-                    reviewsSection
-
-                    Spacer(minLength: 100)
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                // LAYER 1: SCENIC BACKGROUND (Fixed)
+                AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1468581264429-2548ef9eb732?q=80&w=3270&auto=format&fit=crop")) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: geometry.size.width, height: geometry.size.height * 0.35) // Reduced by 10% (from 0.45 to 0.35)
+                            .clipShape(RibbonCurve()) // Custom wave shape
+                    } else {
+                        Rectangle()
+                            .fill(Color.blue.opacity(0.2))
+                            .frame(height: geometry.size.height * 0.35)
+                            .clipShape(RibbonCurve())
+                    }
                 }
-                .padding(AppTheme.Spacing.md)
-            }
-        }
-        .ignoresSafeArea(edges: .top)
-        .overlay(alignment: .topLeading) {
-            // Back button
-            Button(action: { dismiss() }) {
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .padding(12)
-                    .background(Color.black.opacity(0.3))
-                    .clipShape(Circle())
-            }
-            .padding(.leading, AppTheme.Spacing.md)
-            .padding(.top, 50)
-        }
-        .overlay(alignment: .bottom) {
-            // Bottom action bar
-            bottomActionBar
-        }
-    }
+                .ignoresSafeArea()
 
-    // MARK: - Hero Section
-    private var heroSection: some View {
-        ZStack(alignment: .bottomLeading) {
-            AsyncImage(url: URL(string: sake.imageURL)) { phase in
-                switch phase {
-                case .empty:
-                    RoundedRectangle(cornerRadius: 0)
-                        .fill(
-                            LinearGradient(
-                                colors: [AppTheme.Colors.secondary, AppTheme.Colors.primary],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(height: 400)
-                        .overlay(
-                            ProgressView()
-                                .tint(.white)
-                        )
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 400)
-                        .clipped()
-                case .failure:
-                    RoundedRectangle(cornerRadius: 0)
-                        .fill(
-                            LinearGradient(
-                                colors: [AppTheme.Colors.secondary, AppTheme.Colors.primary],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(height: 400)
-                        .overlay(
-                            Image(systemName: "photo")
-                                .font(.system(size: 80))
-                                .foregroundColor(.white.opacity(0.3))
-                        )
-                @unknown default:
-                    RoundedRectangle(cornerRadius: 0)
-                        .fill(AppTheme.Colors.cardBackground)
-                        .frame(height: 400)
+                // LAYER 2: FIXED OBJECTS (Bottle Left, Rating Right)
+                HStack(alignment: .bottom, spacing: 0) {
+                    // LEFT COLUMN: BOTTLE & BUTTONS
+                    VStack(spacing: 0) {
+                        Spacer()
+
+                        SakeImage(url: "hakkaisan_sparkling_transparent")
+                            .frame(width: 375, height: 600)
+                            .shadow(color: Color.black.opacity(0.35), radius: 25, x: 5, y: 10)
+                            .offset(x: -20, y: -220) // Moved UP by 220 pixels
+                            .scaleEffect(bottleScale)
+                            .opacity(bottleOpacity)
+
+                        Spacer()
+                    }
+                    .frame(width: geometry.size.width * 0.65)
+                    // Removed bottom padding since we now align from top via top spacer
+                    
+                    // RIGHT COLUMN: RATING BADGE
+                    VStack {
+                        Spacer()
+                            .frame(height: geometry.size.height * 0.20) // Moved up 15% higher
+                        
+                        // Rating Circle
+                        VStack(spacing: 2) {
+                            Text(String(format: "%.1f", sake.rating))
+                                .font(.system(size: 24, weight: .black, design: .serif))
+                                .foregroundColor(AppTheme.Colors.primary)
+                            
+                            HStack(spacing: 1) {
+                                ForEach(0..<5) { _ in
+                                    Image(systemName: "star.fill")
+                                        .font(.system(size: 8))
+                                        .foregroundColor(AppTheme.Colors.starColor)
+                                }
+                            }
+                            
+                            Text("\(sake.reviewCount) reviews")
+                                .font(.system(size: 8))
+                                .foregroundColor(.gray)
+                                .padding(.top, 4)
+                        }
+                        .frame(width: 90, height: 90)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
+                        .scaleEffect(ratingScale)
+                        .opacity(ratingOpacity)
+                        
+                        Spacer()
+                    }
+                    .frame(width: geometry.size.width * 0.35)
+                    .frame(maxHeight: .infinity, alignment: .top)
                 }
-            }
-        }
-    }
+                .zIndex(1)
 
-    // MARK: - Name Section
-    private var nameSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(sake.breweryName)
-                .font(AppTheme.Typography.callout)
-                .foregroundColor(AppTheme.Colors.textSecondary)
+                // LAYER 3: SCROLLABLE SHEET (Starts BELOW Bottle via Spacer)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // Transparent Spacer - Pushes sheet down to reveal Layer 2 (Bottle)
+                        // Positioned below the bottle
+                        Color.clear
+                            .frame(height: geometry.size.height * 0.45)
+                        
+                        // The White Sheet with translucent top
+                        VStack(alignment: .leading, spacing: 24) {
 
-            Text(sake.displayName)
-                .font(AppTheme.Typography.title)
-                .fontWeight(.bold)
+                            // ACTION BUTTONS at top
+                            HStack(spacing: 12) {
+                                Button(action: {}) {
+                                    Label("Rate", systemImage: "star")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.black)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(Color.white)
+                                        .clipShape(Capsule())
+                                        .overlay(Capsule().stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                                }
 
-            HStack(spacing: 6) {
-                Text("🇯🇵")
-                Text(sake.prefecture)
-                    .font(AppTheme.Typography.subheadline)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
-            }
-        }
-    }
+                                Button(action: {}) {
+                                    Label("Actions", systemImage: "list.bullet")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.black)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(Color.white)
+                                        .clipShape(Capsule())
+                                        .overlay(Capsule().stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                                }
+                                Spacer()
+                            }
 
-    // MARK: - Rating Section
-    private var ratingSection: some View {
-        HStack(spacing: AppTheme.Spacing.md) {
-            HStack(spacing: 4) {
-                Image(systemName: "star.fill")
-                    .foregroundColor(AppTheme.Colors.starColor)
-                Text(String(format: "%.1f", sake.rating))
-                    .font(AppTheme.Typography.title2)
-                    .fontWeight(.bold)
-            }
+                            // SAKE NAME
+                            
+                            // Header Info
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(languageManager.currentLanguage == .english ? sake.nameEnglish : sake.nameJapanese)
+                                    .font(.system(size: 22, weight: .bold)) // Sans-serif, reduced size (~Location + 40%)
+                                    .foregroundColor(AppTheme.Colors.textPrimary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                
+                                HStack(spacing: 6) {
+                                    Image(systemName: "mappin.and.ellipse")
+                                        .foregroundColor(AppTheme.Colors.primary)
+                                    Text("\(languageManager.currentLanguage == .english ? sake.prefecture : sake.prefectureJapanese), \(languageManager.currentLanguage == .english ? "Japan" : "日本")")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            
+                            Divider()
+                            
+                            // Description
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("The Story")
+                                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                                
+                                Text(sake.description)
+                                    .font(.system(size: 16))
+                                    .lineSpacing(6)
+                                    .foregroundColor(AppTheme.Colors.textSecondary)
+                            }
+                            
+                            // Stats
+                            quickStatsGrid
+                            
+                            // Pairings
+                            foodPairingSection
+                            
+                            Spacer(minLength: 120)
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.top, 16)
+                        .padding(.bottom, 32)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            GeometryReader { geo in
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.white.opacity(0.0), location: 0.0),
+                                        .init(color: Color.white, location: 0.15)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            }
+                        )
+                        .clipShape(RoundedCorner(radius: 35, corners: [.topLeft, .topRight]))
+                        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: -5)
+                    }
+                }
+                .zIndex(2)
+                .ignoresSafeArea(edges: .bottom)
 
-            Text("(\(sake.reviewCount.formatted()) reviews)")
-                .font(AppTheme.Typography.subheadline)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-        }
-    }
-
-    // MARK: - Classification Section
-    private var classificationSection: some View {
-        HStack {
-            Text(sake.classification.rawValue)
-                .font(AppTheme.Typography.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(AppTheme.Colors.primary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(AppTheme.Colors.primary.opacity(0.1))
-                .cornerRadius(AppTheme.CornerRadius.lg)
-
-            Text(sake.classification.japaneseLabel)
-                .font(AppTheme.Typography.subheadline)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-        }
-    }
-
-    // MARK: - Quick Stats Section
-    private var quickStatsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            Text("Details")
-                .font(AppTheme.Typography.headline)
-                .fontWeight(.semibold)
-
-            VStack(spacing: AppTheme.Spacing.sm) {
-                statRow(label: "Rice Variety", value: sake.riceVariety)
-                statRow(label: "Polish Ratio", value: "\(sake.polishRatio)%")
-                statRow(label: "Alcohol Content", value: "\(String(format: "%.1f", sake.alcoholContent))%")
-                statRow(label: "Price", value: sake.formattedPrice)
-                statRow(label: "Availability", value: sake.availability.rawValue)
-            }
-        }
-    }
-
-    // MARK: - Flavor Profile Section
-    private var flavorProfileSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            Text("Flavor Profile")
-                .font(AppTheme.Typography.headline)
-                .fontWeight(.semibold)
-
-            VStack(spacing: AppTheme.Spacing.sm) {
-                flavorBar(label: "Sweetness", value: sake.flavorProfile.sweetness, max: 5)
-                flavorBar(label: "Acidity", value: sake.flavorProfile.acidity, max: 5)
-                flavorBar(label: "Body", value: sake.flavorProfile.body, max: 5)
-                flavorBar(label: "Umami", value: sake.flavorProfile.umami, max: 5)
-                flavorBar(label: "Aroma", value: sake.flavorProfile.aromaIntensity, max: 5)
-            }
-        }
-    }
-
-    // MARK: - Description Section
-    private var descriptionSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Text("About")
-                .font(AppTheme.Typography.headline)
-                .fontWeight(.semibold)
-
-            Text(sake.description)
-                .font(AppTheme.Typography.body)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-                .lineSpacing(4)
-        }
-    }
-
-    // MARK: - Serving Temperature Section
-    private var servingTempSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Text("Serving Temperature")
-                .font(AppTheme.Typography.headline)
-                .fontWeight(.semibold)
-
-            ForEach(sake.servingTemperature, id: \.self) { temp in
+                // LAYER 4: NAVIGATION
                 HStack {
-                    Image(systemName: "thermometer.medium")
-                        .foregroundColor(AppTheme.Colors.secondary)
-                    Text(temp)
-                        .font(AppTheme.Typography.body)
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "arrow.left")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.black)
+                            .padding(10)
+                            .background(Color.white.opacity(0.8))
+                            .clipShape(Circle())
+                    }
+                    Spacer()
+                    Button(action: { isBookmarked.toggle() }) {
+                        Image(systemName: isBookmarked ? "heart.fill" : "heart")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(isBookmarked ? .red : .black)
+                            .padding(10)
+                            .background(Color.white.opacity(0.8))
+                            .clipShape(Circle())
+                    }
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 50)
+                .zIndex(3)
+                
+                // LAYER 5: STICKY BUTTON
+                VStack {
+                    Spacer()
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(sake.formattedPrice)
+                                .font(.system(size: 24, weight: .bold, design: .serif))
+                                .foregroundColor(AppTheme.Colors.primary)
+                            Text("Imported from Japan")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                        Button(action: {}) {
+                            Text("Add to Cart")
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 30)
+                                .padding(.vertical, 16)
+                                .background(AppTheme.Colors.primary)
+                                .clipShape(Capsule())
+                                .shadow(color: AppTheme.Colors.primary.opacity(0.3), radius: 10, x: 0, y: 5)
+                        }
+                    }
+                    .padding(20)
+                    .background(Color.white)
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: -5)
+                    .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? 0 : 20)
+                }
+                .zIndex(3)
+            }
+        }
+        .edgesIgnoringSafeArea(.all)
+        .toolbar(.hidden, for: .navigationBar) // Hide default nav bar
+        .toolbar(.hidden, for: .tabBar) // Hide main tab bar
+        .onAppear {
+            // Animate bottle and rating in with a spring effect
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
+                bottleScale = 1.0
+                bottleOpacity = 1.0
+            }
+
+            // Rating appears slightly after bottle
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
+                ratingScale = 1.0
+                ratingOpacity = 1.0
             }
         }
     }
-
-    // MARK: - Food Pairing Section
+    
+    // MARK: - Components
+    
+    private var quickStatsGrid: some View {
+        HStack(spacing: 12) {
+            statBadge(icon: "drop.fill", title: "Alcohol", value: "\(Int(sake.alcoholContent))%")
+            statBadge(icon: "leaf.fill", title: "Polishing", value: "\(sake.polishRatio)%")
+            statBadge(icon: "sparkles", title: "Type", value: "Junmai")
+        }
+    }
+    
+    private func statBadge(icon: String, title: String, value: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(AppTheme.Colors.primary)
+            
+            Text(value)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(AppTheme.Colors.textPrimary)
+            
+            Text(title)
+                .font(.system(size: 10))
+                .foregroundColor(.gray)
+                .textCase(.uppercase)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(Color.gray.opacity(0.05))
+        .cornerRadius(12)
+    }
+    
     private var foodPairingSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            Text("Recommended Food Pairings")
-                .font(AppTheme.Typography.headline)
-                .fontWeight(.semibold)
-
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Best Served With")
+                .font(.system(size: 16, weight: .semibold, design: .serif))
+            
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppTheme.Spacing.md) {
-                    ForEach(["🍣 Sushi", "🍤 Tempura", "🐟 Sashimi", "🍢 Yakitori"], id: \.self) { pairing in
-                        Text(pairing)
-                            .font(AppTheme.Typography.subheadline)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(AppTheme.Colors.cardBackground)
-                            .cornerRadius(AppTheme.CornerRadius.lg)
+                HStack(spacing: 12) {
+                    ForEach(["🍣 Sushi", "🐟 Sashimi", "🍤 Tempura"], id: \.self) { pair in
+                        HStack(spacing: 6) {
+                            Text(pair)
+                                .font(.system(size: 14, weight: .medium))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
+                        .cornerRadius(20)
                     }
                 }
             }
         }
     }
+}
 
-    // MARK: - Reviews Section
-    private var reviewsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            HStack {
-                Text("Reviews")
-                    .font(AppTheme.Typography.headline)
-                    .fontWeight(.semibold)
+// MARK: - Helper Structs
 
-                Spacer()
-
-                Button("See all") {
-                    // Show all reviews
-                }
-                .font(AppTheme.Typography.subheadline)
-                .foregroundColor(AppTheme.Colors.primary)
-            }
-
-            Text("No reviews yet. Be the first to review!")
-                .font(AppTheme.Typography.body)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-                .padding(.vertical, AppTheme.Spacing.lg)
-        }
-    }
-
-    // MARK: - Bottom Action Bar
-    private var bottomActionBar: some View {
-        HStack(spacing: AppTheme.Spacing.md) {
-            // Price
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Price")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
-                Text(sake.formattedPrice)
-                    .font(AppTheme.Typography.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppTheme.Colors.primary)
-            }
-
-            Spacer()
-
-            // Bookmark button
-            Button(action: { isBookmarked.toggle() }) {
-                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                    .font(.title3)
-                    .foregroundColor(isBookmarked ? AppTheme.Colors.primary : AppTheme.Colors.textSecondary)
-                    .frame(width: 50, height: 50)
-                    .background(AppTheme.Colors.cardBackground)
-                    .clipShape(Circle())
-            }
-
-            // Add to cart button
-            Button(action: {}) {
-                HStack {
-                    Image(systemName: "cart.fill")
-                    Text("Add to Cart")
-                        .fontWeight(.semibold)
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 14)
-                .background(AppTheme.Colors.primary)
-                .cornerRadius(AppTheme.CornerRadius.lg)
-            }
-        }
-        .padding(AppTheme.Spacing.md)
-        .background(Color.white)
-        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: -2)
-    }
-
-    // MARK: - Helper Views
-    private func statRow(label: String, value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(AppTheme.Typography.callout)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-
-            Spacer()
-
-            Text(value)
-                .font(AppTheme.Typography.callout)
-                .fontWeight(.semibold)
-        }
-    }
-
-    private func flavorBar(label: String, value: Int, max: Int) -> some View {
-        HStack {
-            Text(label)
-                .font(AppTheme.Typography.callout)
-                .foregroundColor(AppTheme.Colors.textPrimary)
-                .frame(width: 100, alignment: .leading)
-
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(AppTheme.Colors.cardBackground)
-                        .frame(height: 8)
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(AppTheme.Colors.primary)
-                        .frame(width: geometry.size.width * (CGFloat(value) / CGFloat(max)), height: 8)
+/// Smart Image View that handles local vs remote images and rendering content mode
+struct SakeImage: View {
+    let url: String
+    
+    var body: some View {
+        if url.starts(with: "http") {
+            AsyncImage(url: URL(string: url)) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                } else {
+                    // Placeholder while loading
+                    Color.clear
                 }
             }
-            .frame(height: 8)
-
-            Text("\(value)/\(max)")
-                .font(AppTheme.Typography.caption)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-                .frame(width: 40, alignment: .trailing)
+        } else {
+            // Local Image
+            // We expect a transparent PNG in assets
+            Image(url)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
         }
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+    
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
     }
 }
 
 #Preview {
     SakeDetailView(sake: SampleData.shared.sakes[0])
+        .environmentObject(LanguageManager())
 }

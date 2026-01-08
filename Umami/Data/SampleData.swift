@@ -125,6 +125,26 @@ class SampleData {
             availability: .inStock
         ),
         Sake(
+            id: UUID(uuidString: "aaaa1111-bbbb-2222-cccc-333333333333")!,
+            nameJapanese: "八海山 発泡にごり酒",
+            nameEnglish: "Hakkaisan Sparkling Nigori",
+            breweryId: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!,
+            breweryName: "Hakkaisan Brewery",
+            prefecture: "Niigata",
+            classification: .junmaiGinjo,
+            riceVariety: "Gohyakumangoku",
+            polishRatio: 60,
+            alcoholContent: 14.5,
+            flavorProfile: FlavorProfile(sweetness: 4, acidity: 3, body: 2, umami: 2, aromaIntensity: 4),
+            imageURL: "hakkaisan_sparkling_transparent", // Updated to transparent asset
+            price: 19.00,
+            rating: 4.8,
+            reviewCount: 42,
+            description: "A refreshing sparkling sake. Lightly sweet and crisp with a soft nigori texture. Perfect for celebrations.",
+            servingTemperature: ["Chilled (5-10°C)"],
+            availability: .inStock
+        ),
+        Sake(
             id: UUID(uuidString: "dddddddd-dddd-dddd-dddd-dddddddddddd")!,
             nameJapanese: "獺祭 純米大吟醸 磨き三割九分",
             nameEnglish: "Dassai 39",

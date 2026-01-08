@@ -1,0 +1,139 @@
+//
+//  MainTabView.swift
+//  Umami
+//
+//  Created on 2025-01-05.
+//
+
+import SwiftUI
+
+struct MainTabView: View {
+    @EnvironmentObject var languageManager: LanguageManager
+    @State private var selectedTab = 0
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            TabView(selection: $selectedTab) {
+                HomeView()
+                    .environmentObject(languageManager)
+                    .tag(0)
+
+                ShopView()
+                    .environmentObject(languageManager)
+                    .tag(1)
+
+                CameraView()
+                    .tag(2)
+
+                MySakeView()
+                    .environmentObject(languageManager)
+                    .tag(3)
+
+                MoreView()
+                    .environmentObject(languageManager)
+                    .tag(4)
+            }
+
+            // Custom Tab Bar
+            CustomTabBar(selectedTab: $selectedTab)
+                .environmentObject(languageManager)
+        }
+        .edgesIgnoringSafeArea(.bottom)
+    }
+}
+
+struct CustomTabBar: View {
+    @EnvironmentObject var languageManager: LanguageManager
+    @Binding var selectedTab: Int
+
+    var body: some View {
+        ZStack {
+            // Background with curve for camera button
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(AppTheme.Colors.primary)
+                    .frame(height: 70)
+            }
+
+            HStack(spacing: 0) {
+                // Home
+                TabBarButton(
+                    icon: "house.fill",
+                    title: LocalizedStrings.get("home", language: languageManager.currentLanguage),
+                    isSelected: selectedTab == 0,
+                    action: { selectedTab = 0 }
+                )
+
+                // Shop
+                TabBarButton(
+                    icon: "square.grid.2x2.fill",
+                    title: LocalizedStrings.get("shop", language: languageManager.currentLanguage),
+                    isSelected: selectedTab == 1,
+                    action: { selectedTab = 1 }
+                )
+
+                // Camera - Special circular button
+                Button(action: { selectedTab = 2 }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white)
+                            .frame(width: 64, height: 64)
+                            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+
+                        Circle()
+                            .fill(AppTheme.Colors.primary)
+                            .frame(width: 56, height: 56)
+
+                        Image(systemName: "camera.fill")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                    }
+                }
+                .offset(y: -20)
+
+                // My Sake
+                TabBarButton(
+                    icon: "wineglass.fill",
+                    title: LocalizedStrings.get("mySake", language: languageManager.currentLanguage),
+                    isSelected: selectedTab == 3,
+                    action: { selectedTab = 3 }
+                )
+
+                // More
+                TabBarButton(
+                    icon: "ellipsis",
+                    title: LocalizedStrings.get("more", language: languageManager.currentLanguage),
+                    isSelected: selectedTab == 4,
+                    action: { selectedTab = 4 }
+                )
+            }
+            .padding(.bottom, 8)
+        }
+        .frame(height: 70)
+    }
+}
+
+struct TabBarButton: View {
+    let icon: String
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                Text(title)
+                    .font(AppTheme.Typography.caption2)
+            }
+            .foregroundColor(isSelected ? .white : .white.opacity(0.6))
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+#Preview {
+    MainTabView()
+        .environmentObject(LanguageManager())
+}

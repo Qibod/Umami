@@ -76,18 +76,24 @@ struct SakeCard: View {
             // Sake info
             VStack(alignment: .leading, spacing: 4) {
                 // Sake name
-                Text(languageManager.currentLanguage == .english ? sake.nameEnglish : sake.nameJapanese)
+                Text(sake.localizedName(for: languageManager.currentLanguage))
                     .font(AppTheme.Typography.callout)
                     .fontWeight(.semibold)
                     .foregroundColor(AppTheme.Colors.textPrimary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
+                
+                // DEBUG: Show URL
+                Text(sake.imageURL.components(separatedBy: "/").last ?? "")
+                   .font(.system(size: 8))
+                   .foregroundColor(.red)
+                   .lineLimit(1)
 
                 // Prefecture with flag
                 HStack(spacing: 4) {
                     Text("🇯🇵")
                         .font(.caption)
-                    Text(sake.prefecture)
+                    Text(sake.localizedPrefecture(for: languageManager.currentLanguage))
                         .font(AppTheme.Typography.caption2)
                         .foregroundColor(AppTheme.Colors.textSecondary)
                 }
@@ -221,7 +227,7 @@ struct SakeListCard: View {
             // Sake info
             VStack(alignment: .leading, spacing: 6) {
                 // Sake name
-                Text(languageManager.currentLanguage == .english ? sake.nameEnglish : sake.nameJapanese)
+                Text(sake.localizedName(for: languageManager.currentLanguage))
                     .font(AppTheme.Typography.callout)
                     .fontWeight(.semibold)
                     .foregroundColor(AppTheme.Colors.textPrimary)
@@ -231,7 +237,7 @@ struct SakeListCard: View {
                 HStack(spacing: 4) {
                     Text("🇯🇵")
                         .font(.caption2)
-                    Text(sake.prefecture)
+                    Text(sake.localizedPrefecture(for: languageManager.currentLanguage))
                         .font(AppTheme.Typography.caption2)
                         .foregroundColor(AppTheme.Colors.textSecondary)
                 }

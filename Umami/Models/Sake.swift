@@ -31,6 +31,28 @@ struct Sake: Identifiable, Codable {
         nameEnglish.isEmpty ? nameJapanese : nameEnglish
     }
 
+    var prefectureJapanese: String {
+        PrefectureHelper.getJapaneseName(for: prefecture)
+    }
+
+    func localizedName(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return nameEnglish.isEmpty ? nameJapanese : nameEnglish
+        case .japanese:
+            return nameJapanese.isEmpty ? nameEnglish : nameJapanese
+        }
+    }
+
+    func localizedPrefecture(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return prefecture
+        case .japanese:
+            return prefectureJapanese
+        }
+    }
+
     var formattedPrice: String {
         String(format: "$%.2f", price)
     }

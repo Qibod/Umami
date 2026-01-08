@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LanguageToggle: View {
-    @ObservedObject var languageManager = LanguageManager.shared
+    @EnvironmentObject var languageManager: LanguageManager
 
     var body: some View {
         Button(action: {
